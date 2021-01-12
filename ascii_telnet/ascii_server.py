@@ -34,13 +34,22 @@ from ascii_telnet.ascii_player import VT100Player
 
 try:
     # noinspection PyCompatibility
-    from socketserver import StreamRequestHandler, ThreadingMixIn, TCPServer
+    from socketserver import StreamRequestHandler, ThreadingMixIn, TCPServer, BaseServer
 except ImportError:  # Py2
     # noinspection PyCompatibility,PyUnresolvedReferences
-    from SocketServer import StreamRequestHandler, ThreadingMixIn, TCPServer
+    from SocketServer import StreamRequestHandler, ThreadingMixIn, TCPServer, BaseServer
 
+class MPTCPServer(TCPServer):
+    def __init__(self, server_address, RequestHandlerClass, bind_and_activate=True):
+        BaseServer.__init__(self, server_address, RequestHandlerClass)
+        self.socket = socket.socket(self.address_family,
+                                    self.socket_type,
+                                    262)
+        if bind_and_activate:
+            self.server_bind()
+            self.server_activate()
 
-class ThreadedTCPServer(ThreadingMixIn, TCPServer):
+class ThreadedTCPServer(ThreadingMixIn, MPTCPServer):
     daemon_threads = True
 
 
